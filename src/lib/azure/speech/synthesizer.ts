@@ -1,6 +1,6 @@
 import { getAzureCredential } from '$lib/azure/credential';
-import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import debug from 'debug';
+import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 
 const log = debug('speech:synthesizer');
 
@@ -21,23 +21,16 @@ export class Synthesizer {
 		private readonly speechConfig: SpeechSDK.SpeechConfig
 	) {}
 
-	public static async create() {
+	public static async create(voiceName: string) {
 		const { token, region } = await getAzureCredential();
 		const player = new SpeechSDK.SpeakerAudioDestination();
 		const audioConfig = SpeechSDK.AudioConfig.fromSpeakerOutput(player);
 		const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
 		speechConfig.speechSynthesisLanguage = 'en-US';
-		const preSynthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
-
-		const { voices } = await preSynthesizer.getVoicesAsync('en-US');
-		log({ voices });
-
-		const voice = voices[Math.floor(Math.random() * voices.length)];
-		const name = voice.displayName.split(' ')[0];
-		speechConfig.speechSynthesisVoiceName = voice.name;
+		speechConfig.speechSynthesisVoiceName = voiceName;
 
 		const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
-		return new Synthesizer(synthesizer, player, name, speechConfig);
+		return new Synthesizer(synthesizer, player, voiceName, speechConfig);
 	}
 
 	async interrupt() {

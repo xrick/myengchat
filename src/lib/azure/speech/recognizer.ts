@@ -1,6 +1,6 @@
 import { getAzureCredential } from '$lib/azure/credential';
-import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import debug from 'debug';
+import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 
 const log = debug('speech:recognizer');
 
@@ -12,7 +12,7 @@ export interface RecognizerConfig {
 	onPronunciationAssessed?: (result: SpeechSDK.PronunciationAssessmentResult) => void;
 	topic?: string;
 	phraseList?: string[];
-	silenceTimeoutMs?: number; // VAD silence timeout in ms (1000-5000)
+	silenceTimeoutMs?: number; // VAD silence timeout in ms (500-5000)
 }
 
 export class Recognizer {
@@ -167,11 +167,14 @@ export class Recognizer {
 	async stop() {
 		log('Stopping speech recognition and audio analysis ...');
 		clearInterval(this.tokenRefreshInterval);
-		this.recognizer?.stopContinuousRecognitionAsync();
+		const p = new Promise<void>((resolve, reject) =>
+			this.recognizer?.stopContinuousRecognitionAsync(resolve, reject)
+		);
 		this.recognizer?.close();
 		this.recognizer = undefined;
 		this.audioContext?.close();
 		this.audioContext = undefined;
+		await p;
 		log('Speech recognition and audio analysis stopped.');
 	}
 }

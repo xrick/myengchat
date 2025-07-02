@@ -18,7 +18,7 @@ export async function getAzureCredential(): Promise<AzureCredential> {
 }
 
 async function fetchAzureCredential(): Promise<AzureCredential> {
-	const res = await fetch(`/api/use-azure`);
+	const res = await fetch('/api/speech/credentials');
 	if (!res.ok) {
 		log('Failed to fetch Azure token', res);
 		throw new Error('Failed to fetch Azure token');
